@@ -1,0 +1,12 @@
+{
+    "cSpell.words": [
+        "gaierror",
+        "noconsole",
+        "pady",
+        "pyautogui",
+        "pyinstaller",
+        "venv"
+    ],
+    "editor.formatOnSave": true,
+    "python.analysis.autoIndent": true,
+}
