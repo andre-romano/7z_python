@@ -49,7 +49,7 @@ class Localization:
 
         self.current_lang = lang_code
 
-    def translate(self, key, default=None):
+    def translate(self, key, default=None) -> str:
         """
         Retrieve a translated string for the given key.
 

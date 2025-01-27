@@ -1,3 +1,4 @@
+import os
 import logging
 
 from PyQt5.QtWidgets import QWidget, QFileDialog
@@ -7,6 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class FileDialog:
+    @staticmethod
+    def _fixPathSeparator(filename: str):
+        filename = filename.replace('/', os.path.sep)
+        filename = filename.replace('\\', os.path.sep)
+        return filename
+
     def __init__(self, dialog_title: str, parent: QWidget = None):
         self.dialog_title = dialog_title
         self.parent = parent
@@ -24,6 +31,9 @@ class FileDialog:
             self.parent, self.dialog_title, filter=filter)
         if not files:
             raise Exception(err_msg)
+
+        files = list(map(self._fixPathSeparator, files))
+
         logger.info(f"{files}")
         return files
 
@@ -38,6 +48,9 @@ class FileDialog:
             self.parent, self.dialog_title, filter=filter)
         if not file:
             raise Exception(err_msg)
+
+        file = self._fixPathSeparator(file)
+
         logger.info(f"{file}")
         return file
 
@@ -51,6 +64,9 @@ class FileDialog:
             self.parent, self.dialog_title)
         if not directory:
             raise Exception(err_msg)
+
+        directory = self._fixPathSeparator(directory)
+
         logger.info(f"{directory}")
         return directory
 
@@ -65,5 +81,8 @@ class FileDialog:
             self.parent, self.dialog_title, filter=filter)
         if not file:
             raise Exception(err_msg)
+
+        file = self._fixPathSeparator(file)
+
         logger.info(f"{file}")
         return file

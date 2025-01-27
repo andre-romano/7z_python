@@ -82,6 +82,26 @@ class MainWindow(QWidget):
 
         return layout
 
+    def decode_file_format_arg(self, filename: str):
+        file_fmt_arg = '-t'
+        try:
+            file_format = Regex(
+                r"\.([^\.]+)$").search(filename).groups()[0]
+            if file_format in ('7z', 'zip', 'lzma', 'lzma2', 'zst', 'cab', 'wim', 'iso'):
+                file_fmt_arg += file_format
+            elif file_format in ('tar'):
+                file_fmt_arg += 'tar'  # .tar
+            elif file_format in ('gz'):
+                file_fmt_arg += 'gzip'  # .tar.gz
+            elif file_format in ('bz2'):
+                file_fmt_arg += 'bzip2'  # .tar.bz2
+            elif file_format in ('xz'):
+                file_fmt_arg += 'xz'  # .tar.xz
+        except Exception as e:
+            logger.error(f"{e}")
+            return ''
+        return file_fmt_arg
+
     def compress_files(self):
         loc = self.localization
         try:
@@ -92,12 +112,16 @@ class MainWindow(QWidget):
 
             out_file_txt = loc.translate("CompressDialog.output_file")
             out_err_txt = loc.translate("CompressDialog.output_err")
-            out_filter_txt = loc.translate("CompressDialog.output_file_filter")
+            out_filter_txt = loc.translate(
+                "CompressDialog.output_file_filter"
+            ).replace('|', ';')
             output_file = FileDialog(out_file_txt, self).selectSaveFile(
                 err_msg=out_err_txt,
                 filter=out_filter_txt)
 
             extra_args = self.config.get('Compression.extra_args', '').split()
+            extra_args.append(self.decode_file_format_arg(output_file))
+
             command = ["a"] + extra_args
             command += [output_file] + files
             self.sevenZip.start(command)
@@ -114,19 +138,23 @@ class MainWindow(QWidget):
             input_err_txt = loc.translate(
                 "DecompressDialog.input_err")
             input_filter_txt = loc.translate(
-                "DecompressDialog.input_file_filter")
-            archive_file = FileDialog(input_files_txt, self).selectFile(err_msg=input_err_txt,
-                                                                        filter=input_filter_txt)
+                "DecompressDialog.input_file_filter"
+            ).replace('|', ';')
+            archive_file = FileDialog(
+                input_files_txt, self
+            ).selectFile(err_msg=input_err_txt, filter=input_filter_txt)
 
             out_dir_txt = loc.translate(
                 "DecompressDialog.output_dir")
             out_err_txt = loc.translate(
                 "DecompressDialog.output_err")
             output_dir = FileDialog(
-                out_dir_txt, self).selectDirectory(err_msg=out_err_txt)
+                out_dir_txt, self
+            ).selectDirectory(err_msg=out_err_txt)
 
             extra_args = self.config.get(
                 'Decompression.extra_args', '').split()
+
             command = ["x", archive_file]
             command += [f"-o{output_dir}"]
             command += extra_args

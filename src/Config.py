@@ -12,8 +12,10 @@ class Config:
         self.config = configparser.ConfigParser()
 
         if not os.path.exists(config_file):
-            self.set('Compression.extra_args', '-y -bb2 -mmt -mx5 -ms')
-            self.set('Decompression.extra_args', '-y -bb2 -mmt')
+            self.set('Compression.extra_args',
+                     '-y -bb2 -mmt')
+            self.set('Decompression.extra_args',
+                     '-y -bb2 -mmt')
             self.save_config()
         else:
             self.load_config()
