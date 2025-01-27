@@ -33,7 +33,7 @@ for path in paths:
     os.environ['PATH'] += f"{path};"
 
 # Change the current working directory to the script's directory
-os.chdir(script_path)
+# os.chdir(script_path)
 
 if __name__ == "__main__":
     # TODO set debug to FALSE

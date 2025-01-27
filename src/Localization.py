@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class Localization:
-    def __init__(self, locale_dir, lang=os.environ['LANG'], default_lang="en"):
+    def __init__(self, locale_dir, lang=None, default_lang="en"):
         """
         Initialize the localization system.
 

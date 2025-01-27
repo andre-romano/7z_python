@@ -37,9 +37,9 @@ class MainWindow(QWidget):
         self.config = Config(self.paths['config_file'])
         self.sevenZip = SevenZip(
             data_path=self.paths['data_path'],
-            start_callback=self.sevenZip_started,
-            update_callback=self.sevenZip_update,
-            finish_callback=self.sevenZip_finish
+            start_callback=self.on_started,
+            update_callback=self.on_update,
+            finish_callback=self.on_finish
         )
         self.localization = Localization(
             locale_dir=self.paths['locale_path'],
@@ -98,7 +98,7 @@ class MainWindow(QWidget):
             extra_args = self.config.get('Compression.extra_args', '').split()
             command = ["a"] + extra_args
             command += [output_file] + files
-            self.sevenZip.run(command)
+            self.sevenZip.start(command)
         except Exception as e:
             logger.error(f"{e}")
             QMessageBox.critical(
@@ -128,23 +128,23 @@ class MainWindow(QWidget):
             command = ["x", archive_file]
             command += [f"-o{output_dir}"]
             command += extra_args
-            self.sevenZip.run(command)
+            self.sevenZip.start(command)
         except Exception as e:
             logger.error(f"{e}")
             QMessageBox.critical(
                 self, f"Error", f"{e}")
 
-    def sevenZip_started(self):
+    def on_started(self):
         self.log_output.clear()
         self.progress_bar.setValue(0)
 
-    def sevenZip_update(self, message: str):
-        logger.debug(message)
+    def on_update(self, message: str):
+        # logger.debug(message)
         self.log_output.append(message)
         self.update_progress(message)
         self.check_return_code(message)
 
-    def sevenZip_finish(self):
+    def on_finish(self):
         self.progress_bar.setValue(100)
 
     def update_progress(self, message):
