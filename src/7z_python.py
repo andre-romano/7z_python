@@ -24,13 +24,8 @@ try:
 except:
     pass
 
-lib_path = data_path + f"{os.path.sep}lib"
-
-# register paths in sys.path (PATH env)
-paths = [script_path, data_path, lib_path]
-for path in paths:
-    sys.path.insert(0, path)
-    os.environ['PATH'] += f"{path};"
+# place script path in PATH env
+sys.path.insert(0, script_path)
 
 # Change the current working directory to the script's directory
 # os.chdir(script_path)
@@ -39,9 +34,11 @@ if __name__ == "__main__":
     # TODO set debug to FALSE
     debug = True
 
-    # setup logging
+    # remove old log file (log file rotation here ?)
     if os.path.exists(logfile):
         os.remove(logfile)
+
+    # setup logging
     logging.basicConfig(
         level=logging.DEBUG if debug else logging.INFO,
         format='%(asctime)s - [%(levelname)s]\t-  %(name)s.%(funcName)s():  %(message)s',
@@ -52,11 +49,18 @@ if __name__ == "__main__":
         ]
     )
 
-    # start app
-    app = QApplication(sys.argv)
-    mainWindow = MainWindow(
-        data_path,
-        debug=debug
-    )
-    mainWindow.show()
-    sys.exit(app.exec_())
+    # Create a logger for this module
+    logger = logging.getLogger(__name__)
+
+    # start app (safely catch errors and log'em)
+    try:
+        app = QApplication(sys.argv)
+        mainWindow = MainWindow(
+            data_path,
+            debug=debug
+        )
+        mainWindow.show()
+        sys.exit(app.exec_())
+    except Exception as e:
+        logger.error(f"Uncaught Error: {e}")
+        sys.exit(1)

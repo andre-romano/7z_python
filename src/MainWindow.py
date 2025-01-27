@@ -4,7 +4,7 @@ import sys
 import os
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLayout
-from PyQt5.QtWidgets import QLabel, QPushButton, QLineEdit, QTextEdit
+from PyQt5.QtWidgets import QLabel, QPushButton, QTextEdit
 from PyQt5.QtWidgets import QMessageBox, QProgressBar
 
 from Config import Config
@@ -23,35 +23,33 @@ class MainWindow(QWidget):
         super().__init__()
         logger.info(f"(data_path={data_path}, debug={debug})")
 
-        self._setENV()
+        self._setENV(data_path)
 
-        self.paths = {
-            'data_path': data_path,
-            'locale_path': f"{data_path}{os.path.sep}lang",
-            'config_file': f"7z_python.ini"
-        }
-
-        self.config = Config(self.paths['config_file'])
+        self.config = Config(self.env['CONFIG_FILE'])
         self.sevenZip = SevenZip(
-            data_path=self.paths['data_path'],
+            env=self.env,
             start_callback=self.on_started,
             update_callback=self.on_update,
             finish_callback=self.on_finish
         )
-        self.localization = Localization(
-            locale_dir=self.paths['locale_path'],
-            lang=self.env['LANG'],
-            default_lang='en'
-        )
+        self.localization = Localization(env=self.env)
 
         self.setWindowTitle("7-Zip Python Frontend")
         self.setGeometry(300, 300, 600, 400)
         self.setLayout(self._init_UI())
 
-    def _setENV(self):
+    def _setENV(self, data_path: str):
         self.env = os.environ.copy()
-        self.env['LANG'] = os.getenv('LANG', 'en').split('_')[0].split('-')[0]
-        logger.debug(f"env['LANG']={self.env['LANG']}")
+
+        # path config
+        self.env['DATA_PATH'] = data_path
+        self.env['LOCALE_PATH'] = f"{data_path}{os.path.sep}lang"
+        self.env['CONFIG_FILE'] = f"7z_python.ini"
+
+        # language config
+        self.env['LANG_DEFAULT'] = 'en'
+        self.env['LANG'] = self.env.get('LANG', self.env['LANG_DEFAULT'])
+        self.env['LANG'] = self.env['LANG'].split('_')[0].split('-')[0]
 
     def _init_UI(self) -> QLayout:
         loc = self.localization
@@ -63,12 +61,12 @@ class MainWindow(QWidget):
 
         compress_btn_txt = loc.translate("Main.compress_btn")
         self.compress_button = QPushButton(compress_btn_txt)
-        self.compress_button.clicked.connect(self.compress_files)
+        self.compress_button.clicked.connect(self.on_click_btn_compress)
         layout.addWidget(self.compress_button)
 
         decompress_btn_txt = loc.translate("Main.decompress_btn")
         self.decompress_button = QPushButton(decompress_btn_txt)
-        self.decompress_button.clicked.connect(self.decompress_files)
+        self.decompress_button.clicked.connect(self.on_click_btn_decompress)
         layout.addWidget(self.decompress_button)
 
         self.progress_bar = QProgressBar()
@@ -82,27 +80,7 @@ class MainWindow(QWidget):
 
         return layout
 
-    def decode_file_format_arg(self, filename: str):
-        file_fmt_arg = '-t'
-        try:
-            file_format = Regex(
-                r"\.([^\.]+)$").search(filename).groups()[0]
-            if file_format in ('7z', 'zip', 'lzma', 'lzma2', 'zst', 'cab', 'wim', 'iso'):
-                file_fmt_arg += file_format
-            elif file_format in ('tar'):
-                file_fmt_arg += 'tar'  # .tar
-            elif file_format in ('gz'):
-                file_fmt_arg += 'gzip'  # .tar.gz
-            elif file_format in ('bz2'):
-                file_fmt_arg += 'bzip2'  # .tar.bz2
-            elif file_format in ('xz'):
-                file_fmt_arg += 'xz'  # .tar.xz
-        except Exception as e:
-            logger.error(f"{e}")
-            return ''
-        return file_fmt_arg
-
-    def compress_files(self):
+    def on_click_btn_compress(self):
         loc = self.localization
         try:
             input_files_txt = loc.translate("CompressDialog.input_files")
@@ -120,17 +98,16 @@ class MainWindow(QWidget):
                 filter=out_filter_txt)
 
             extra_args = self.config.get('Compression.extra_args', '').split()
-            extra_args.append(self.decode_file_format_arg(output_file))
+            extra_args.append(SevenZip.decode_file_format_arg(output_file))
 
             command = ["a"] + extra_args
             command += [output_file] + files
             self.sevenZip.start(command)
         except Exception as e:
             logger.error(f"{e}")
-            QMessageBox.critical(
-                self, f"Error", f"{e}")
+            QMessageBox.critical(self, f"Error", f"{e}")
 
-    def decompress_files(self):
+    def on_click_btn_decompress(self):
         loc = self.localization
         try:
             input_files_txt = loc.translate(
@@ -153,7 +130,8 @@ class MainWindow(QWidget):
             ).selectDirectory(err_msg=out_err_txt)
 
             extra_args = self.config.get(
-                'Decompression.extra_args', '').split()
+                'Decompression.extra_args', ''
+            ).split()
 
             command = ["x", archive_file]
             command += [f"-o{output_dir}"]
@@ -161,8 +139,7 @@ class MainWindow(QWidget):
             self.sevenZip.start(command)
         except Exception as e:
             logger.error(f"{e}")
-            QMessageBox.critical(
-                self, f"Error", f"{e}")
+            QMessageBox.critical(self, f"Error", f"{e}")
 
     def on_started(self):
         self.log_output.clear()
@@ -200,14 +177,12 @@ class MainWindow(QWidget):
             # Pattern (e.g., "Return code: 0")
             regex = Regex(r"Return code:.*(\d+)")
             match = regex.search(message)
-            # Extract percentage
+            # Extract return code
             retcode = int(match.groups()[0])
-            # Update the progress bar value
-            if retcode == 0:
-                QMessageBox.information(
-                    self, msg_box_title, msg_box_succ)
-            else:
-                QMessageBox.critical(
-                    self, msg_box_title, msg_box_fail)
+            # Define user msg_box
+            msg_box_func = QMessageBox.information if retcode == 0 else QMessageBox.critical
+            msg_box_msg = msg_box_succ if retcode == 0 else msg_box_fail
+            # show msg_box
+            msg_box_func(self, msg_box_title, msg_box_msg)
         except Exception as e:
             pass

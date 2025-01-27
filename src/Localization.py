@@ -7,31 +7,27 @@ logger = logging.getLogger(__name__)
 
 
 class Localization:
-    def __init__(self, locale_dir, lang=None, default_lang="en"):
+    def __init__(self, env: dict):
         """
         Initialize the localization system.
-
-        :param locale_dir: Directory where the .ini localization files are stored.
-        :param default_lang: Default language to load.
         """
-        self.locale_dir = locale_dir
-        self.current_lang = default_lang
+        self.env = env
+        self.locale_dir = self.env['LOCALE_PATH']
         self.translations = {}
-        try:
-            self.load_language(lang)
-        except Exception as e:
-            logger.error(f"Fail to load language '{lang}'. Error: {e}")
-            try:
-                self.load_language(default_lang)
-            except Exception as e:
-                logger.error(f"Fail to load language '{
-                             default_lang}'. Error: {e}")
 
-    def load_language(self, lang_code):
+        try:
+            self.load_language(self.env['LANG'])
+        except Exception as e:
+            logger.error(
+                f"Fail to load language '{self.env['LANG']}'. Error: {e}")
+            self.load_language(self.env['LANG_DEFAULT'])
+
+    def load_language(self, lang_code: str):
         """
         Load translations from an INI file based on the given language code.
 
         :param lang_code: Language code (e.g., 'en', 'es', 'fr').
+        :raise Exception if language not found
         """
         ini_file = os.path.join(self.locale_dir, f"{lang_code}.ini")
 
@@ -46,8 +42,6 @@ class Localization:
         for section in config.sections():
             for key, value in config.items(section):
                 self.translations[f"{section}.{key}"] = value
-
-        self.current_lang = lang_code
 
     def translate(self, key, default=None) -> str:
         """
