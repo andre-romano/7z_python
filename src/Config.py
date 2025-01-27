@@ -12,9 +12,11 @@ class Config:
         self.config = configparser.ConfigParser()
 
         if not os.path.exists(config_file):
-            raise FileNotFoundError(f"O arquivo de configuração '{
-                                    config_file}' não foi encontrado.")
-        self.load_config()
+            self.set('Compression.extra_args', '-y -bb2 -mmt -mx5 -ms')
+            self.set('Decompression.extra_args', '-y -bb2 -mmt')
+            self.save_config()
+        else:
+            self.load_config()
 
     def load_config(self):
         """Carrega as configurações do arquivo INI """
@@ -33,7 +35,6 @@ class Config:
         if not self.config.has_section(section):
             self.config.add_section(section)
         self.config.set(section, option, str(value))
-        self.save_config()
 
     def save_config(self):
         """Salva as configurações no arquivo INI."""

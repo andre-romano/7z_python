@@ -23,15 +23,12 @@ class MainWindow(QWidget):
         super().__init__()
         logger.info(f"(data_path={data_path}, debug={debug})")
 
-        self.env = os.environ.copy()
-        self.env['LANG'] = os.getenv('LANG', 'en').split('_')[0].split('-')[0]
-
-        logger.debug(f"env['LANG']={self.env['LANG']}")
+        self._setENV()
 
         self.paths = {
             'data_path': data_path,
             'locale_path': f"{data_path}{os.path.sep}lang",
-            'config_file': f"{data_path}{os.path.sep}config.ini"
+            'config_file': f"7z_python.ini"
         }
 
         self.config = Config(self.paths['config_file'])
@@ -50,6 +47,11 @@ class MainWindow(QWidget):
         self.setWindowTitle("7-Zip Python Frontend")
         self.setGeometry(300, 300, 600, 400)
         self.setLayout(self._init_UI())
+
+    def _setENV(self):
+        self.env = os.environ.copy()
+        self.env['LANG'] = os.getenv('LANG', 'en').split('_')[0].split('-')[0]
+        logger.debug(f"env['LANG']={self.env['LANG']}")
 
     def _init_UI(self) -> QLayout:
         loc = self.localization

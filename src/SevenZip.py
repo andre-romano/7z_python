@@ -2,7 +2,7 @@ import logging
 import sys
 import os
 
-from queue import Queue
+from multiprocessing import Queue
 
 from SubprocessWorker import SubprocessWorker
 

@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-from queue import Queue
+from multiprocessing import Queue
 
 from PyQt5.QtCore import QThread
 
