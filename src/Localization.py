@@ -33,7 +33,7 @@ class Localization:
         :param default: Default value to return if key is not found.
         :return: Translated string or the default value.
         """
-        return self.translations.get(key, default or f"[{key}]")
+        return str(self.translations.get(key, default or f"[{key}]")).strip()
 
     def load_language(self, lang_code: str):
         """

@@ -5,38 +5,60 @@ import os
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLayout
 from PyQt5.QtWidgets import QLabel, QPushButton, QTextEdit
-from PyQt5.QtWidgets import QMessageBox, QProgressBar
+from PyQt5.QtWidgets import QProgressBar
+
+from PyQt5.QtCore import QTimer
+
+from widget.FileDialog import FileDialog
+from widget.MsgBox import MsgBox
+
+from process.SevenZipHandler import SevenZipHandler
 
 from Config import Config
 from Localization import Localization
-
 from Regex import Regex
-from FileDialog import FileDialog
-from SevenZip import SevenZip
+from SFXAutorun import SFXAutorun
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
 
 
 class MainWindow(QWidget):
+    # operation modes
+    MODE_NORMAL = 0
+    MODE_SFX = 1
+
     def __init__(self, data_path, debug=False):
         super().__init__()
         logger.info(f"(data_path={data_path}, debug={debug})")
 
+        # set APP environment
+        self.mode = MainWindow.MODE_NORMAL
         self._setENV(data_path)
 
-        self.config = Config(self.env['CONFIG_FILE'])
-        self.sevenZip = SevenZip(
-            env=self.env,
-            start_callback=self.on_started,
-            update_callback=self.on_update,
-            finish_callback=self.on_finish
+        # get config, localization, 7z_worker
+        self.config = Config(self.env)
+        self.localization = Localization(self.env)
+        self.sevenZip = SevenZipHandler(
+            self.env,
+            self.on_7z_started,
+            self.on_7z_update,
+            self.on_7z_finish
         )
-        self.localization = Localization(env=self.env)
 
+        # create UI
         self.setWindowTitle("7-Zip Python Frontend")
         self.setGeometry(300, 300, 600, 400)
         self.setLayout(self._init_UI())
+
+        # create auxiliary UI
+        self.msgBox = MsgBox(self)  # Define msg box
+        self.fileDialog = FileDialog(self)  # Define file dialog
+        self.sfxAutorun = None  # initiate
+
+        # check for SFX config
+        # (after predefined delay -- allow UI to display)
+        QTimer.singleShot(50, self.check_for_SFX)
 
     def _setENV(self, data_path: str):
         self.env = os.environ.copy()
@@ -80,71 +102,117 @@ class MainWindow(QWidget):
 
         return layout
 
+    def check_for_SFX(self):
+        if not self.config['SFX.input_file']:
+            return
+
+        # create SFX autorun
+        self.sfxAutorun = SFXAutorun(
+            parent=self,
+            env=self.env,
+            autorun=self.config['SFX.autorun'],
+            silent=self.config['SFX.silent']
+        )
+
+        # get localization
+        loc = self.localization
+        title = loc['SFX_MsgBox.title']
+        text = loc['SFX_MsgBox.content']
+
+        if self.sfxAutorun.isSilent():
+            self.on_sfx_decompress()
+        else:
+            # question user
+            self.msgBox.showQuestionYesNo(
+                title,
+                text,
+                default_btn=MsgBox.StandardButton.Yes,
+                yes_callback=self.on_sfx_decompress
+            )
+
+    def on_sfx_decompress(self):
+        self.mode = MainWindow.MODE_SFX
+
+        input_file = self.config['SFX.input_file']
+        output_dir = self.config['SFX.output_path']
+        extra_args = self.config['Decompression.extra_args']
+        self.sevenZip.startDecompress(input_file, output_dir, extra_args)
+
     def on_click_btn_compress(self):
         loc = self.localization
         try:
-            input_files_txt = loc["CompressDialog.input_files"]
-            input_err_txt = loc["CompressDialog.input_err"]
-            files = FileDialog(input_files_txt, self).selectFiles(
-                err_msg=input_err_txt)
+            title = loc["CompressDialog.input_files"]
+            err_msg = loc["CompressDialog.input_err"]
+            input_files = self.fileDialog.selectFiles(
+                title, err_msg)
 
-            out_file_txt = loc["CompressDialog.output_file"]
-            out_err_txt = loc["CompressDialog.output_err"]
-            out_filter_txt = loc["CompressDialog.output_file_filter"]
-            out_filter_txt = out_filter_txt.replace('|', ';')
-            output_file = FileDialog(out_file_txt, self).selectSaveFile(
-                err_msg=out_err_txt,
-                filter=out_filter_txt)
+            title = loc["CompressDialog.output_file"]
+            err_msg = loc["CompressDialog.output_err"]
+            filter = loc["CompressDialog.output_file_filter"]
+            filter = filter.replace('|', ';')
+            output_file = self.fileDialog.selectSaveFile(
+                title, err_msg, filter=filter)
 
-            extra_args = self.config['Compression.extra_args'].split()
-            extra_args.append(SevenZip.decode_file_format_arg(output_file))
-
-            command = ["a"] + extra_args
-            command += [output_file] + files
-            self.sevenZip.start(command)
+            self.sevenZip.startCompress(
+                input_files, output_file, self.config['Compression.extra_args'])
         except Exception as e:
             logger.error(f"{e}")
-            QMessageBox.critical(self, f"Error", f"{e}")
+            self.msgBox.showCritical(f"Error", f"{e}")
 
     def on_click_btn_decompress(self):
         loc = self.localization
         try:
-            input_files_txt = loc["DecompressDialog.input_file"]
-            input_err_txt = loc["DecompressDialog.input_err"]
-            input_filter_txt = loc["DecompressDialog.input_file_filter"]
-            input_filter_txt = input_filter_txt.replace('|', ';')
-            archive_file = FileDialog(
-                input_files_txt, self
-            ).selectFile(err_msg=input_err_txt, filter=input_filter_txt)
+            title = loc["DecompressDialog.input_file"]
+            err_msg = loc["DecompressDialog.input_err"]
+            filter = loc["DecompressDialog.input_file_filter"]
+            filter = filter.replace('|', ';')
+            input_file = self.fileDialog.selectFile(
+                title, err_msg, filter=filter)
 
-            out_dir_txt = loc["DecompressDialog.output_dir"]
-            out_err_txt = loc["DecompressDialog.output_err"]
-            output_dir = FileDialog(
-                out_dir_txt, self
-            ).selectDirectory(err_msg=out_err_txt)
+            title = loc["DecompressDialog.output_dir"]
+            err_msg = loc["DecompressDialog.output_err"]
+            output_dir = self.fileDialog.selectDirectory(
+                title, err_msg)
 
-            extra_args = self.config['Decompression.extra_args'].split()
-
-            command = ["x", archive_file]
-            command += [f"-o{output_dir}"]
-            command += extra_args
-            self.sevenZip.start(command)
+            self.sevenZip.startDecompress(
+                input_file, output_dir, self.config['Decompression.extra_args'])
         except Exception as e:
             logger.error(f"{e}")
-            QMessageBox.critical(self, f"Error", f"{e}")
+            self.msgBox.showCritical(f"Error", f"{e}")
 
-    def on_started(self):
+    def on_7z_started(self):
         self.log_output.clear()
         self.progress_bar.setValue(0)
 
-    def on_update(self, message: str):
+    def on_7z_update(self, message: str):
         # logger.debug(message)
         self.log_output.append(message)
         self.update_progress(message)
-        self.check_return_code(message)
 
-    def on_finish(self):
+    def on_7z_finish(self):
+        self.log_output.append(" ")
         self.progress_bar.setValue(100)
+
+        # get localization
+        loc = self.localization
+        title = loc["OpFinish_MsgBox.title"]
+        text_succ = loc["OpFinish_MsgBox.content_succ"]
+        text_fail = loc["OpFinish_MsgBox.content_fail"]
+
+        # is in SFX mode
+        if self.mode == MainWindow.MODE_SFX:
+            # define SFX autorun GUI
+            self.sfxAutorun.setLogOutput(self.log_output)
+            self.sfxAutorun.setMsgBox(title, text_succ, text_fail)
+
+            # start SFX autorun
+            self.sfxAutorun.start()
+        else:
+            # show msgbox with the return code
+            if self.sevenZip.getReturnCode() == 0:
+                self.msgBox.showInformation(title, text_succ)
+            else:
+                self.msgBox.showCritical(title, text_fail)
 
     def update_progress(self, message):
         try:
@@ -157,24 +225,5 @@ class MainWindow(QWidget):
             percentage = int(percentage)
             # Update the progress bar value
             self.progress_bar.setValue(percentage)
-        except Exception as e:
-            pass
-
-    def check_return_code(self, message):
-        loc = self.localization
-        msg_box_title = loc["OpFinish_MsgBox.title"]
-        msg_box_succ = loc["OpFinish_MsgBox.content_succ"]
-        msg_box_fail = loc["OpFinish_MsgBox.content_fail"]
-        try:
-            # Pattern (e.g., "Return code: 0")
-            regex = Regex(r"Return code:.*(\d+)")
-            match = regex.search(message)
-            # Extract return code
-            retcode = int(match.groups()[0])
-            # Define user msg_box
-            msg_box_func = QMessageBox.information if retcode == 0 else QMessageBox.critical
-            msg_box_msg = msg_box_succ if retcode == 0 else msg_box_fail
-            # show msg_box
-            msg_box_func(self, msg_box_title, msg_box_msg)
         except Exception as e:
             pass

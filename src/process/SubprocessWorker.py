@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-from multiprocessing import Queue
+from multiprocessing import Queue, Lock
 
 from PyQt5.QtCore import QThread
 
@@ -15,10 +15,21 @@ class SubprocessWorker(QThread):
         self.queue = queue
         self.env = env
 
+        self.lock = Lock()
+        self.returncode = -1
+
+    def _setReturnCode(self, returncode: int):
+        with self.lock:
+            self.returncode = returncode
+
+    def getReturnCode(self):
+        with self.lock:
+            return self.returncode
+
     def run(self):
         try:
             cmd_str = ' '.join(self.command)
-            self.queue.put(f"Running: \"{cmd_str}\"")
+            self.queue.put(f"Starting process: \"{cmd_str}\"")
 
             process = subprocess.Popen(
                 self.command,
@@ -35,9 +46,10 @@ class SubprocessWorker(QThread):
                     break
                 if output:
                     self.queue.put(output.strip())  # Emit output
-
+        except Exception as e:
+            self.queue.put(f"Error: {e}")
+        finally:
+            self._setReturnCode(process.returncode)
             self.queue.put(" ")
             self.queue.put("Process TERMINATED")
             self.queue.put(f"Return code: {process.returncode}")
-        except Exception as e:
-            self.queue.put(f"Error: {e}")

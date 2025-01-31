@@ -14,11 +14,10 @@ class FileDialog:
         filename = filename.replace('\\', os.path.sep)
         return filename
 
-    def __init__(self, dialog_title: str, parent: QWidget = None):
-        self.dialog_title = dialog_title
+    def __init__(self, parent: QWidget = None):
         self.parent = parent
 
-    def selectFiles(self, err_msg: str, filter: str = None):
+    def selectFiles(self, title: str, err_msg: str, filter: str = None):
         """
         Function to select multiple files using QFileDialog.
         :param filter: Filter for file types.
@@ -26,9 +25,9 @@ class FileDialog:
 
         :raise Exception if no files selected
         """
-        logger.info(f"(dialog={self.dialog_title}, filter={filter})")
+        logger.info(f"(title={title}, filter={filter})")
         files, _ = QFileDialog.getOpenFileNames(
-            self.parent, self.dialog_title, filter=filter)
+            self.parent, title, filter=filter)
         if not files:
             raise Exception(err_msg)
 
@@ -37,15 +36,15 @@ class FileDialog:
         logger.info(f"{files}")
         return files
 
-    def selectFile(self, err_msg: str, filter: str = None):
+    def selectFile(self, title: str, err_msg: str, filter: str = None):
         """
         Function to select a single file using QFileDialog.
         :param filter: Filter for file types.
         :return: Selected file path or None if no file was selected.
         """
-        logger.info(f"(dialog={self.dialog_title}, filter={filter})")
+        logger.info(f"(title={title}, filter={filter})")
         file, _ = QFileDialog.getOpenFileName(
-            self.parent, self.dialog_title, filter=filter)
+            self.parent, title, filter=filter)
         if not file:
             raise Exception(err_msg)
 
@@ -54,14 +53,14 @@ class FileDialog:
         logger.info(f"{file}")
         return file
 
-    def selectDirectory(self, err_msg: str):
+    def selectDirectory(self, title: str, err_msg: str):
         """
         Function to select a directory using QFileDialog.
         :return: Selected directory or None if no directory was selected.
         """
-        logger.info(f"(dialog={self.dialog_title})")
+        logger.info(f"(title={title})")
         directory = QFileDialog.getExistingDirectory(
-            self.parent, self.dialog_title)
+            self.parent, title)
         if not directory:
             raise Exception(err_msg)
 
@@ -70,15 +69,15 @@ class FileDialog:
         logger.info(f"{directory}")
         return directory
 
-    def selectSaveFile(self, err_msg: str, filter: str = None):
+    def selectSaveFile(self, title: str, err_msg: str, filter: str = None):
         """
         Function to select an save file (with save option) using QFileDialog.
         :param filter: Filter for file types.
         :return: Save file path or None if no file was selected.
         """
-        logger.info(f"(dialog={self.dialog_title}, filter={filter})")
+        logger.info(f"(title={title}, filter={filter})")
         file, _ = QFileDialog.getSaveFileName(
-            self.parent, self.dialog_title, filter=filter)
+            self.parent, title, filter=filter)
         if not file:
             raise Exception(err_msg)
 

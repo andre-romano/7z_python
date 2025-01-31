@@ -7,11 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 class Config:
-    def __init__(self, config_file):
-        self.config_file = config_file
+    def __init__(self, env: dict):
+        self.env = env
+        self.config_file = env['CONFIG_FILE']
         self.config = configparser.ConfigParser()
 
-        if not os.path.exists(config_file):
+        if not os.path.exists(self.config_file):
             self._init_default_data()
             self.save_config()
         else:
@@ -31,16 +32,13 @@ class Config:
         self.set('SFX.autorun', '')
         self.set('SFX.input_file', '')
         self.set('SFX.output_path', '')
-
-    def load_config(self):
-        """Carrega as configurações do arquivo INI """
-        self.config.read(self.config_file, encoding='utf-8')
+        self.set('SFX.silent', '')
 
     def get(self, sec_option: str, fallback=''):
         """Obtém um valor da configuração com opção de fallback.
         Formato: 'secao.opcao' """
         section, option = sec_option.split('.')
-        return self.config.get(section, option, fallback=fallback)
+        return str(self.config.get(section, option, fallback=fallback)).strip()
 
     def set(self, sec_option: str, value):
         """Define um valor na configuração.
@@ -50,11 +48,6 @@ class Config:
             self.config.add_section(section)
         self.config.set(section, option, str(value))
 
-    def save_config(self):
-        """Salva as configurações no arquivo INI."""
-        with open(self.config_file, 'w', encoding='utf-8') as configfile:
-            self.config.write(configfile)
-
     def show_all(self):
         """Mostra todas as configurações carregadas."""
         for section in self.config.sections():
@@ -62,3 +55,12 @@ class Config:
             for key, value in self.config.items(section):
                 print(f"{key} = {value}")
             print()
+
+    def load_config(self):
+        """Carrega as configurações do arquivo INI """
+        self.config.read(self.config_file, encoding='utf-8')
+
+    def save_config(self):
+        """Salva as configurações no arquivo INI."""
+        with open(self.config_file, 'w', encoding='utf-8') as configfile:
+            self.config.write(configfile)
