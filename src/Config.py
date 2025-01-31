@@ -12,12 +12,18 @@ class Config:
         self.config = configparser.ConfigParser()
 
         if not os.path.exists(config_file):
-            self._create_sections()
+            self._init_default_data()
             self.save_config()
         else:
             self.load_config()
 
-    def _create_sections(self):
+    def __getitem__(self, sec_option: str):
+        return self.get(sec_option)
+
+    def __setitem__(self, sec_option: str, value):
+        return self.set(sec_option, value)
+
+    def _init_default_data(self):
         self.set('Compression.extra_args', '-y -bb2 -mmt')
 
         self.set('Decompression.extra_args', '-y -bb2 -mmt')
@@ -30,7 +36,7 @@ class Config:
         """Carrega as configurações do arquivo INI """
         self.config.read(self.config_file, encoding='utf-8')
 
-    def get(self, sec_option: str, fallback=None):
+    def get(self, sec_option: str, fallback=''):
         """Obtém um valor da configuração com opção de fallback.
         Formato: 'secao.opcao' """
         section, option = sec_option.split('.')

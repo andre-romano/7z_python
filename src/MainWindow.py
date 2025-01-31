@@ -55,16 +55,16 @@ class MainWindow(QWidget):
         loc = self.localization
         layout = QVBoxLayout()
 
-        label_txt = loc.translate("Main.operation_label")
+        label_txt = loc["Main.operation_label"]
         self.label = QLabel(label_txt)
         layout.addWidget(self.label)
 
-        compress_btn_txt = loc.translate("Main.compress_btn")
+        compress_btn_txt = loc["Main.compress_btn"]
         self.compress_button = QPushButton(compress_btn_txt)
         self.compress_button.clicked.connect(self.on_click_btn_compress)
         layout.addWidget(self.compress_button)
 
-        decompress_btn_txt = loc.translate("Main.decompress_btn")
+        decompress_btn_txt = loc["Main.decompress_btn"]
         self.decompress_button = QPushButton(decompress_btn_txt)
         self.decompress_button.clicked.connect(self.on_click_btn_decompress)
         layout.addWidget(self.decompress_button)
@@ -83,21 +83,20 @@ class MainWindow(QWidget):
     def on_click_btn_compress(self):
         loc = self.localization
         try:
-            input_files_txt = loc.translate("CompressDialog.input_files")
-            input_err_txt = loc.translate("CompressDialog.input_err")
+            input_files_txt = loc["CompressDialog.input_files"]
+            input_err_txt = loc["CompressDialog.input_err"]
             files = FileDialog(input_files_txt, self).selectFiles(
                 err_msg=input_err_txt)
 
-            out_file_txt = loc.translate("CompressDialog.output_file")
-            out_err_txt = loc.translate("CompressDialog.output_err")
-            out_filter_txt = loc.translate(
-                "CompressDialog.output_file_filter"
-            ).replace('|', ';')
+            out_file_txt = loc["CompressDialog.output_file"]
+            out_err_txt = loc["CompressDialog.output_err"]
+            out_filter_txt = loc["CompressDialog.output_file_filter"]
+            out_filter_txt = out_filter_txt.replace('|', ';')
             output_file = FileDialog(out_file_txt, self).selectSaveFile(
                 err_msg=out_err_txt,
                 filter=out_filter_txt)
 
-            extra_args = self.config.get('Compression.extra_args', '').split()
+            extra_args = self.config['Compression.extra_args'].split()
             extra_args.append(SevenZip.decode_file_format_arg(output_file))
 
             command = ["a"] + extra_args
@@ -110,28 +109,21 @@ class MainWindow(QWidget):
     def on_click_btn_decompress(self):
         loc = self.localization
         try:
-            input_files_txt = loc.translate(
-                "DecompressDialog.input_file")
-            input_err_txt = loc.translate(
-                "DecompressDialog.input_err")
-            input_filter_txt = loc.translate(
-                "DecompressDialog.input_file_filter"
-            ).replace('|', ';')
+            input_files_txt = loc["DecompressDialog.input_file"]
+            input_err_txt = loc["DecompressDialog.input_err"]
+            input_filter_txt = loc["DecompressDialog.input_file_filter"]
+            input_filter_txt = input_filter_txt.replace('|', ';')
             archive_file = FileDialog(
                 input_files_txt, self
             ).selectFile(err_msg=input_err_txt, filter=input_filter_txt)
 
-            out_dir_txt = loc.translate(
-                "DecompressDialog.output_dir")
-            out_err_txt = loc.translate(
-                "DecompressDialog.output_err")
+            out_dir_txt = loc["DecompressDialog.output_dir"]
+            out_err_txt = loc["DecompressDialog.output_err"]
             output_dir = FileDialog(
                 out_dir_txt, self
             ).selectDirectory(err_msg=out_err_txt)
 
-            extra_args = self.config.get(
-                'Decompression.extra_args', ''
-            ).split()
+            extra_args = self.config['Decompression.extra_args'].split()
 
             command = ["x", archive_file]
             command += [f"-o{output_dir}"]
@@ -170,9 +162,9 @@ class MainWindow(QWidget):
 
     def check_return_code(self, message):
         loc = self.localization
-        msg_box_title = loc.translate("OpFinish_MsgBox.title")
-        msg_box_succ = loc.translate("OpFinish_MsgBox.content_succ")
-        msg_box_fail = loc.translate("OpFinish_MsgBox.content_fail")
+        msg_box_title = loc["OpFinish_MsgBox.title"]
+        msg_box_succ = loc["OpFinish_MsgBox.content_succ"]
+        msg_box_fail = loc["OpFinish_MsgBox.content_fail"]
         try:
             # Pattern (e.g., "Return code: 0")
             regex = Regex(r"Return code:.*(\d+)")

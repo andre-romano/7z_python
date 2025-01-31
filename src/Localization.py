@@ -22,6 +22,19 @@ class Localization:
                 f"Fail to load language '{self.env['LANG']}'. Error: {e}")
             self.load_language(self.env['LANG_DEFAULT'])
 
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def get(self, key, default=None) -> str:
+        """
+        Retrieve a translated string for the given key.
+
+        :param key: The key to look up (e.g., 'general.greeting').
+        :param default: Default value to return if key is not found.
+        :return: Translated string or the default value.
+        """
+        return self.translations.get(key, default or f"[{key}]")
+
     def load_language(self, lang_code: str):
         """
         Load translations from an INI file based on the given language code.
@@ -42,16 +55,6 @@ class Localization:
         for section in config.sections():
             for key, value in config.items(section):
                 self.translations[f"{section}.{key}"] = value
-
-    def translate(self, key, default=None) -> str:
-        """
-        Retrieve a translated string for the given key.
-
-        :param key: The key to look up (e.g., 'general.greeting').
-        :param default: Default value to return if key is not found.
-        :return: Translated string or the default value.
-        """
-        return self.translations.get(key, default or f"[{key}]")
 
     def set_language(self, lang_code):
         """
