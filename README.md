@@ -5,8 +5,9 @@ Frontend GUI tool to manage 7zip SFX with an easy to use interface, supporting a
 **Summary**:
 - [7z Python](#7z-python)
   - [How to create an SFX with autorun script](#how-to-create-an-sfx-with-autorun-script)
+    - [Examples](#examples)
   - [Building (Windows .exe)](#building-windows-exe)
-  - [Stable Releases](#stable-releases)
+  - [Download stable releases (binary EXE files)](#download-stable-releases-binary-exe-files)
   - [Special thanks / Acknowledgments](#special-thanks--acknowledgments)
   - [Copyright](#copyright)
 
@@ -21,6 +22,7 @@ Frontend GUI tool to manage 7zip SFX with an easy to use interface, supporting a
    autorun=command_to_execute_after_decompression
    input_file=input_compressed_file_to_extract
    output_path=destination_path_for_files
+   silent=0_or_1_here
    ```
 
 **SFX OPTIONS**:
@@ -39,6 +41,10 @@ Frontend GUI tool to manage 7zip SFX with an easy to use interface, supporting a
   - E.g.: C:\Users\John\Downloads
   - E.g.: C:\ProgramFiles\
 
+### Examples
+
+You can find examples on how to create a config .INI file in the path [./examples](./examples/) of this repository.
+
 ## Building (Windows .exe)
 
 Run the following within the CMD prompt terminal:
@@ -47,9 +53,9 @@ call ".\install_dependencies.bat"
 call ".\build_release.bat"
 ```
 
-## Stable Releases
+## Download stable releases (binary EXE files)
 
-Check the [Releases](./releases/) pages in GitHub (on the right side of this page).
+Check the [Releases](https://github.com/andre-romano/7z_python/releases/) pages in GitHub (on the right side of this page).
 
 ## Special thanks / Acknowledgments
 
