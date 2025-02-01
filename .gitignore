@@ -1,12 +1,6 @@
 
 *.bak
 
-*.7z
-*.rar
-*.zip
-*.gzip
-*.tar
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
