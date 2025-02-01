@@ -41,6 +41,10 @@ Frontend GUI tool to manage 7zip SFX with an easy to use interface, supporting a
   - E.g.: C:\Users\John\Downloads
   - E.g.: C:\ProgramFiles\
 
+- **silent**: describes if the SFX should run silently (without user interaction) or not
+  - E.g.: 0 (non silent SFX)
+  - E.g.: 1 (silent SFX -- no user input will be requested)
+
 ### Examples
 
 You can find examples on how to create a config .INI file in the path [./examples](./examples/) of this repository.
