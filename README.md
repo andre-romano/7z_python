@@ -59,7 +59,7 @@ call ".\build_release.bat"
 
 ## Download stable releases (binary EXE files)
 
-Check the [Releases](https://github.com/andre-romano/7z_python/releases/) pages in GitHub (on the right side of this page).
+Check the [Releases](https://github.com/andre-romano/7z_python/releases/) pages (right side of this page).
 
 ## Special thanks / Acknowledgments
 
