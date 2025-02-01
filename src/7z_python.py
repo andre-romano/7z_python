@@ -4,7 +4,7 @@ import sys
 import os
 import logging
 
-from PyQt5.QtWidgets import QApplication
+import tkinter as tk
 
 from MainWindow import MainWindow
 from Regex import Regex
@@ -54,13 +54,15 @@ if __name__ == "__main__":
 
     # start app (safely catch errors and log'em)
     try:
-        app = QApplication(sys.argv)
-        mainWindow = MainWindow(
+        root = tk.Tk()
+        app = mainWindow = MainWindow(
+            root,
             data_path,
             debug=debug
         )
-        mainWindow.show()
-        sys.exit(app.exec_())
+        app.pack(fill="both", expand=True)
+        root.mainloop()
+        sys.exit(0)
     except Exception as e:
         logger.error(f"Uncaught Error: {e}")
         sys.exit(1)

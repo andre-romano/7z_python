@@ -3,36 +3,35 @@ import logging
 import sys
 import os
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLayout
-from PyQt5.QtWidgets import QLabel, QPushButton, QTextEdit
-from PyQt5.QtWidgets import QProgressBar
+import tkinter as tk
 
-from PyQt5.QtCore import QTimer
+from tkinter import ttk  # Importa o submódulo correto
 
 from widget.FileDialog import FileDialog
 from widget.MsgBox import MsgBox
 
 from process.SevenZipHandler import SevenZipHandler
+from process.SubprocessHandler import SubprocessHandler
 
 from Config import Config
 from Localization import Localization
 from Regex import Regex
-from SFXAutorun import SFXAutorun
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
 
 
-class MainWindow(QWidget):
+class MainWindow(tk.Frame):
     # operation modes
     MODE_NORMAL = 0
     MODE_SFX = 1
 
-    def __init__(self, data_path, debug=False):
-        super().__init__()
+    def __init__(self, root: tk.Tk, data_path: str, debug=False):
+        super().__init__(root)
         logger.info(f"(data_path={data_path}, debug={debug})")
 
         # set APP environment
+        self.root = root
         self.mode = MainWindow.MODE_NORMAL
         self._setENV(data_path)
 
@@ -45,20 +44,23 @@ class MainWindow(QWidget):
             self.on_7z_update,
             self.on_7z_finish
         )
+        self.sfxProcess = SubprocessHandler(
+            self.env,
+            self.on_sfx_start,
+            self.on_sfx_update,
+            self.on_sfx_finish
+        )
 
         # create UI
-        self.setWindowTitle("7-Zip Python Frontend")
-        self.setGeometry(300, 300, 600, 400)
-        self.setLayout(self._init_UI())
+        self._init_UI()
 
         # create auxiliary UI
-        self.msgBox = MsgBox(self)  # Define msg box
-        self.fileDialog = FileDialog(self)  # Define file dialog
-        self.sfxAutorun = None  # initiate
+        self.msgBox = MsgBox()  # Define msg box
+        self.fileDialog = FileDialog()  # Define file dialog
 
         # check for SFX config
         # (after predefined delay -- allow UI to display)
-        QTimer.singleShot(50, self.check_for_SFX)
+        self.root.after(50, self.check_for_SFX)
 
     def _setENV(self, data_path: str):
         self.env = os.environ.copy()
@@ -73,60 +75,48 @@ class MainWindow(QWidget):
         self.env['LANG'] = self.env.get('LANG', self.env['LANG_DEFAULT'])
         self.env['LANG'] = self.env['LANG'].split('_')[0].split('-')[0]
 
-    def _init_UI(self) -> QLayout:
+    def _init_UI(self):
         loc = self.localization
-        layout = QVBoxLayout()
 
-        label_txt = loc["Main.operation_label"]
-        self.label = QLabel(label_txt)
-        layout.addWidget(self.label)
+        self.root.title("7-Zip Python Frontend")
 
-        compress_btn_txt = loc["Main.compress_btn"]
-        self.compress_button = QPushButton(compress_btn_txt)
-        self.compress_button.clicked.connect(self.on_click_btn_compress)
-        layout.addWidget(self.compress_button)
+        # Main Layout
+        self.label = tk.Label(self.root, text=loc["Main.operation_label"])
+        self.label.pack(pady=10)
 
-        decompress_btn_txt = loc["Main.decompress_btn"]
-        self.decompress_button = QPushButton(decompress_btn_txt)
-        self.decompress_button.clicked.connect(self.on_click_btn_decompress)
-        layout.addWidget(self.decompress_button)
+        self.compress_button = tk.Button(
+            self.root, text=loc["Main.compress_btn"], command=self.on_click_btn_compress)
+        self.compress_button.pack(pady=5)
 
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        layout.addWidget(self.progress_bar)
+        self.decompress_button = tk.Button(
+            self.root, text=loc["Main.decompress_btn"], command=self.on_click_btn_decompress)
+        self.decompress_button.pack(pady=5)
 
-        self.log_output = QTextEdit()
-        self.log_output.setReadOnly(True)
-        layout.addWidget(self.log_output)
+        self.progress_bar = tk.DoubleVar(value=0)
+        self.progress = ttk.Progressbar(
+            self.root, variable=self.progress_bar, maximum=100
+        )
+        self.progress.pack(pady=10, fill='x')
 
-        return layout
+        self.log_output = tk.Text(self.root, height=10, wrap='word')
+        self.log_output.pack(pady=5, fill='both', expand=True)
 
     def check_for_SFX(self):
         if not self.config['SFX.input_file']:
             return
-
-        # create SFX autorun
-        self.sfxAutorun = SFXAutorun(
-            parent=self,
-            env=self.env,
-            autorun=self.config['SFX.autorun'],
-            silent=self.config['SFX.silent']
-        )
 
         # get localization
         loc = self.localization
         title = loc['SFX_MsgBox.title']
         text = loc['SFX_MsgBox.content']
 
-        if self.sfxAutorun.isSilent():
+        if self.config['SFX.silent'] == "1":
             self.on_sfx_decompress()
         else:
             # question user
             self.msgBox.showQuestionYesNo(
                 title,
                 text,
-                default_btn=MsgBox.StandardButton.Yes,
                 yes_callback=self.on_sfx_decompress
             )
 
@@ -149,7 +139,6 @@ class MainWindow(QWidget):
             title = loc["CompressDialog.output_file"]
             err_msg = loc["CompressDialog.output_err"]
             filter = loc["CompressDialog.output_file_filter"]
-            filter = filter.replace('|', ';')
             output_file = self.fileDialog.selectSaveFile(
                 title, err_msg, filter=filter)
 
@@ -165,7 +154,6 @@ class MainWindow(QWidget):
             title = loc["DecompressDialog.input_file"]
             err_msg = loc["DecompressDialog.input_err"]
             filter = loc["DecompressDialog.input_file_filter"]
-            filter = filter.replace('|', ';')
             input_file = self.fileDialog.selectFile(
                 title, err_msg, filter=filter)
 
@@ -181,40 +169,39 @@ class MainWindow(QWidget):
             self.msgBox.showCritical(f"Error", f"{e}")
 
     def on_7z_started(self):
-        self.log_output.clear()
-        self.progress_bar.setValue(0)
+        self.log_output.delete(1.0, tk.END)
+        self.progress_bar.set(0)
 
     def on_7z_update(self, message: str):
         # logger.debug(message)
-        self.log_output.append(message)
-        self.update_progress(message)
+        self.log_output.insert(tk.END, message + '\n')
+        self.update_7z_progress(message)
 
     def on_7z_finish(self):
-        self.log_output.append(" ")
-        self.progress_bar.setValue(100)
-
-        # get localization
-        loc = self.localization
-        title = loc["OpFinish_MsgBox.title"]
-        text_succ = loc["OpFinish_MsgBox.content_succ"]
-        text_fail = loc["OpFinish_MsgBox.content_fail"]
+        self.log_output.insert(tk.END, "\n")
+        self.progress_bar.set(100)
 
         # is in SFX mode
-        if self.mode == MainWindow.MODE_SFX:
-            # define SFX autorun GUI
-            self.sfxAutorun.setLogOutput(self.log_output)
-            self.sfxAutorun.setMsgBox(title, text_succ, text_fail)
-
-            # start SFX autorun
-            self.sfxAutorun.start()
+        if self.mode == MainWindow.MODE_SFX and self.config['SFX.autorun']:
+            autorun_cmd = self.config['SFX.autorun'].split()
+            self.sfxProcess.start(autorun_cmd)
         else:
-            # show msgbox with the return code
-            if self.sevenZip.getReturnCode() == 0:
-                self.msgBox.showInformation(title, text_succ)
-            else:
-                self.msgBox.showCritical(title, text_fail)
+            self.showOpFinishedMsgBox(self.sevenZip)
 
-    def update_progress(self, message):
+    def on_sfx_start(self):
+        self.log_output.insert(tk.END, "\n")
+
+    def on_sfx_update(self, message: str):
+        self.log_output.insert(tk.END, message + '\n')
+
+    def on_sfx_finish(self):
+        # show msgbox with the return code
+        if not (self.config['SFX.silent'] == "1"):
+            self.showOpFinishedMsgBox(self.sfxProcess)
+        # quit app
+        self.root.quit()
+
+    def update_7z_progress(self, message):
         try:
             # Search for progress percentage in the message using the regex pattern
             # (e.g., "Extracting: 23%")
@@ -224,6 +211,19 @@ class MainWindow(QWidget):
             operation, percentage = match.groups()
             percentage = int(percentage)
             # Update the progress bar value
-            self.progress_bar.setValue(percentage)
+            self.progress_bar.set(percentage)
         except Exception as e:
             pass
+
+    def showOpFinishedMsgBox(self, subprocess: SubprocessHandler):
+        # get localization
+        loc = self.localization
+        title = loc["OpFinish_MsgBox.title"]
+        text_succ = loc["OpFinish_MsgBox.content_succ"]
+        text_fail = loc["OpFinish_MsgBox.content_fail"]
+
+        # show msgbox with the return code
+        if subprocess.getReturnCode() == 0:
+            self.msgBox.showInformation(title, text_succ)
+        else:
+            self.msgBox.showCritical(title, text_fail)

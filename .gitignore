@@ -1,5 +1,6 @@
 
 *.bak
+7z_python.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
