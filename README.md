@@ -49,7 +49,7 @@ call ".\build_release.bat"
 
 ## Stable Releases
 
-Check the Releases pages in GitHub (on the right side of this page).
+Check the [Releases](./releases/) pages in GitHub (on the right side of this page).
 
 ## Special thanks / Acknowledgments
 
