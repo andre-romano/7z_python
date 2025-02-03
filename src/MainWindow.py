@@ -4,8 +4,7 @@ import sys
 import os
 
 from PyQt6.QtWidgets import QMainWindow
-
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QObject
 
 from ui.MainWindow import Ui_MainWindow  # Import the generated UI class
 
@@ -23,7 +22,7 @@ from SFXAutorun import SFXAutorun
 logger = logging.getLogger(__name__)
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow, QObject):
     # operation modes
     MODE_NORMAL = 0
     MODE_SFX = 1
@@ -45,6 +44,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.on_7z_update,
             self.on_7z_finish
         )
+        self.sevenZip.connectProgress(
+            lambda progress: self.progress_bar.setValue(progress))
 
         # create and configure UI
         self._init_UI()
@@ -167,16 +168,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def on_7z_started(self):
         self.log_output.clear()
-        self.progress_bar.setValue(0)
 
     def on_7z_update(self, message: str):
         # logger.debug(message)
         self.log_output.append(message)
-        self.update_progress(message)
 
     def on_7z_finish(self):
         self.log_output.append(" ")
-        self.progress_bar.setValue(100)
 
         # get localization
         loc = self.localization
@@ -198,17 +196,3 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.msgBox.showInformation(title, text_succ)
             else:
                 self.msgBox.showCritical(title, text_fail)
-
-    def update_progress(self, message):
-        try:
-            # Search for progress percentage in the message using the regex pattern
-            # (e.g., "Extracting: 23%")
-            regex = Regex(r"(Compressing|Extracting).*\s(\d+)%")
-            match = regex.search(message)
-            # Extract percentage
-            operation, percentage = match.groups()
-            percentage = int(percentage)
-            # Update the progress bar value
-            self.progress_bar.setValue(percentage)
-        except Exception as e:
-            pass

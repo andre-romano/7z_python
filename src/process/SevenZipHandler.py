@@ -33,10 +33,23 @@ class SevenZipHandler(SubprocessHandler):
 
     def __init__(self, env, start_callback, update_callback, finish_callback):
         super().__init__(env, start_callback, update_callback, finish_callback)
+        self.addUpdateCallback(self._check_progress)
 
     def _setENV(self):
         self.env['7ZIP_BIN'] = f"{self.env['DATA_PATH']}{os.path.sep}lib"
         self.env['7ZIP'] = f"{self.env['7ZIP_BIN']}{os.path.sep}7z.exe"
+
+    def _check_progress(self, message):
+        try:
+            # Search for progress percentage in the message using the regex pattern
+            # (e.g., "Extracting: 23%")
+            regex = Regex(r"(Compressing|Extracting).*\s(\d+)%")
+            match = regex.search(message)
+            # Extract progress
+            _, progress = match.groups()
+            self.progress.emit(int(progress))
+        except Exception as e:
+            pass
 
     def startCompress(self, input_files: list, output_file: str, extra_args: str = ''):
         extra_args_list = extra_args.split()

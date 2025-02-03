@@ -2,6 +2,18 @@
 src/ui/**/*.py
 
 *.bak
+*.7z
+*.zip
+*.xz
+*.gz
+*.gzip
+*.bz2
+*.lzma
+*.lzma2
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+
 7z_python.ini
 
 # Byte-compiled / optimized / DLL files

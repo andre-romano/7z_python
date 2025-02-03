@@ -1,11 +1,12 @@
 import logging
 import sys
 import os
-import shutil
 
 from multiprocessing import Queue
 
-from Regex import Regex
+from PyQt6.QtCore import pyqtSignal, QObject
+
+from Callbacks import Callbacks
 
 from process.SubprocessWorker import SubprocessWorker
 
@@ -13,16 +14,21 @@ from process.SubprocessWorker import SubprocessWorker
 logger = logging.getLogger(__name__)
 
 
-class SubprocessHandler:
+class SubprocessHandler(QObject):
+    progress = pyqtSignal(int)
+
     def __init__(self, env, start_callback=None, update_callback=None, finish_callback=None):
         super().__init__()
 
         self.env = env
         self._setENV()
 
-        self.start_callback = start_callback or (lambda: None)
-        self.update_callback = update_callback or (lambda: None)
-        self.finish_callback = finish_callback or (lambda: None)
+        self.start_callbacks = Callbacks(start_callback)
+        self.update_callbacks = Callbacks(update_callback)
+        self.finish_callbacks = Callbacks(finish_callback)
+
+        # monitor subprocess progress
+        self.progress.emit(0)
 
         self.command = []
         self._setReturnCode(0)
@@ -37,12 +43,9 @@ class SubprocessHandler:
         if not self.command:
             raise Exception(f"Command is empty")
 
-        exe_filename = self.command[0]
-        if not shutil.which(exe_filename):
-            raise Exception(f"Executable not found at '{exe_filename}'")
-
         # process start callback
-        self.start_callback()
+        self.start_callbacks.run()
+        self.progress.emit(0)
 
         # create queue
         queue = Queue()
@@ -61,7 +64,7 @@ class SubprocessHandler:
             while not queue.empty():
                 message = queue.get()
                 logger.info(message)
-                self.update_callback(message)
+                self.update_callbacks.run(message)
 
         logger.info(" ")
         logger.info("Waiting for Worker ...")
@@ -70,7 +73,20 @@ class SubprocessHandler:
         self._setReturnCode(worker.getReturnCode())
 
         # process finished
-        self.finish_callback()
+        self.finish_callbacks.run()
+        self.progress.emit(100)
+
+    def addStartCallback(self, callback):
+        self.start_callbacks.append(callback)
+
+    def addUpdateCallback(self, callback):
+        self.update_callbacks.append(callback)
+
+    def addFinishCallback(self, callback):
+        self.finish_callbacks.append(callback)
+
+    def connectProgress(self, callback):
+        return self.progress.connect(callback)
 
     def _setReturnCode(self, returncode: int):
         self.returncode = returncode
