@@ -1,5 +1,6 @@
 @echo off
 call .\activate.bat
+call .\build_ui.bat
 
 powershell.exe -ExecutionPolicy Bypass -File .\clean.ps1
 

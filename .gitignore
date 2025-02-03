@@ -1,4 +1,6 @@
 
+src/ui/**/*.py
+
 *.bak
 7z_python.ini
 

@@ -7,9 +7,7 @@ set SCRIPT_PATH=%~dp0
 set VENV_PATH="%SCRIPT_PATH%venv"
 
 :: Check if the venv folder exists
-if exist "%VENV_PATH%" (
-    echo Virtual environment found at %VENV_PATH%
-) else (
+if not exist "%VENV_PATH%" (
     echo Virtual environment not found. Creating a new one...
     python -m venv "%VENV_PATH%"
 )

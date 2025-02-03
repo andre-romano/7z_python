@@ -3,11 +3,11 @@ import logging
 import sys
 import os
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLayout
-from PyQt6.QtWidgets import QLabel, QPushButton, QTextEdit
-from PyQt6.QtWidgets import QProgressBar
+from PyQt6.QtWidgets import QMainWindow
 
 from PyQt6.QtCore import QTimer
+
+from ui.MainWindow import Ui_MainWindow  # Import the generated UI class
 
 from widget.FileDialog import FileDialog
 from widget.MsgBox import MsgBox
@@ -23,7 +23,7 @@ from SFXAutorun import SFXAutorun
 logger = logging.getLogger(__name__)
 
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow, Ui_MainWindow):
     # operation modes
     MODE_NORMAL = 0
     MODE_SFX = 1
@@ -46,10 +46,8 @@ class MainWindow(QWidget):
             self.on_7z_finish
         )
 
-        # create UI
-        self.setWindowTitle("7-Zip Python Frontend")
-        self.setGeometry(300, 300, 600, 400)
-        self.setLayout(self._init_UI())
+        # create and configure UI
+        self._init_UI()
 
         # create auxiliary UI
         self.msgBox = MsgBox(self)  # Define msg box
@@ -73,34 +71,21 @@ class MainWindow(QWidget):
         self.env['LANG'] = self.env.get('LANG', self.env['LANG_DEFAULT'])
         self.env['LANG'] = self.env['LANG'].split('_')[0].split('-')[0]
 
-    def _init_UI(self) -> QLayout:
-        loc = self.localization
-        layout = QVBoxLayout()
+    def _init_UI(self):
+        self.setupUi(self)  # create GUI
+
+        loc = self.localization  # translate the GUI
 
         label_txt = loc["Main.operation_label"]
-        self.label = QLabel(label_txt)
-        layout.addWidget(self.label)
+        self.label.setText(label_txt)
 
         compress_btn_txt = loc["Main.compress_btn"]
-        self.compress_button = QPushButton(compress_btn_txt)
+        self.compress_button.setText(compress_btn_txt)
         self.compress_button.clicked.connect(self.on_click_btn_compress)
-        layout.addWidget(self.compress_button)
 
         decompress_btn_txt = loc["Main.decompress_btn"]
-        self.decompress_button = QPushButton(decompress_btn_txt)
+        self.decompress_button.setText(decompress_btn_txt)
         self.decompress_button.clicked.connect(self.on_click_btn_decompress)
-        layout.addWidget(self.decompress_button)
-
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        layout.addWidget(self.progress_bar)
-
-        self.log_output = QTextEdit()
-        self.log_output.setReadOnly(True)
-        layout.addWidget(self.log_output)
-
-        return layout
 
     def check_for_SFX(self):
         if not self.config['SFX.input_file']:
