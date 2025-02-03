@@ -63,9 +63,10 @@ Check the [Releases](https://github.com/andre-romano/7z_python/releases/) pages 
 
 ## Special thanks / Acknowledgments
 
+- [PyQt6](https://pypi.org/project/PyQt6/)
+- [Qt6](https://www.qt.io/)
 - [7zip project](https://www.7-zip.org/)
 - [Flaticon](https://www.flaticon.com/)
-- [PyQt5](https://pypi.org/project/PyQt5/)
 
 ## Copyright
 

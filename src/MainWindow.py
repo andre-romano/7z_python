@@ -3,11 +3,11 @@ import logging
 import sys
 import os
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLayout
-from PyQt5.QtWidgets import QLabel, QPushButton, QTextEdit
-from PyQt5.QtWidgets import QProgressBar
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLayout
+from PyQt6.QtWidgets import QLabel, QPushButton, QTextEdit
+from PyQt6.QtWidgets import QProgressBar
 
-from PyQt5.QtCore import QTimer
+from PyQt6.QtCore import QTimer
 
 from widget.FileDialog import FileDialog
 from widget.MsgBox import MsgBox

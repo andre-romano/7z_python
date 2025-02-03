@@ -4,7 +4,7 @@ import sys
 import os
 import logging
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from MainWindow import MainWindow
 from Regex import Regex
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             debug=debug
         )
         mainWindow.show()
-        sys.exit(app.exec_())
+        sys.exit(app.exec())
     except Exception as e:
         logger.error(f"Uncaught Error: {e}")
         sys.exit(1)

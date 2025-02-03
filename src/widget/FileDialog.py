@@ -1,7 +1,7 @@
 import os
 import logging
 
-from PyQt5.QtWidgets import QWidget, QFileDialog
+from PyQt6.QtWidgets import QWidget, QFileDialog
 
 # Set up logger (you may have already set this up elsewhere in your application)
 logger = logging.getLogger(__name__)

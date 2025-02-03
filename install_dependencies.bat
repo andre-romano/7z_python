@@ -2,4 +2,4 @@
 call .\activate.bat
 
 pip install -r requirements.txt
-pip freeze > .\requirements.txt
+@REM pip freeze > .\requirements.txt
