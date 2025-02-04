@@ -10,4 +10,6 @@
     "editor.formatOnSave": true,
     "python.analysis.autoIndent": true,
     "docwriter.style": "Auto-detect",
+    "license.year": "auto",
+    "license.author": "Andre Luiz Romano Madureira",
 }

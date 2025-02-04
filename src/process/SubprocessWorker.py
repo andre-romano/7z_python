@@ -4,7 +4,7 @@ import subprocess
 
 from multiprocessing import Queue, Lock
 
-from PyQt6.QtCore import QThread
+from PySide6.QtCore import QThread
 
 
 class SubprocessWorker(QThread):

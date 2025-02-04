@@ -4,7 +4,7 @@ import os
 
 from multiprocessing import Queue
 
-from PyQt6.QtCore import pyqtSignal, QObject
+from PySide6.QtCore import Signal, QObject
 
 from Callbacks import Callbacks
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class SubprocessHandler(QObject):
-    progress = pyqtSignal(int)
+    progress = Signal(int)
 
     def __init__(self, env, start_callback=None, update_callback=None, finish_callback=None):
         super().__init__()

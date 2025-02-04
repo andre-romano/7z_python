@@ -3,7 +3,7 @@ import logging
 import sys
 import os
 
-from PyQt6.QtWidgets import QWidget, QTextEdit
+from PySide6.QtWidgets import QWidget, QTextEdit
 
 from widget.MsgBox import MsgBox
 

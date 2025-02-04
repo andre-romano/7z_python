@@ -3,8 +3,8 @@ import logging
 import sys
 import os
 
-from PyQt6.QtWidgets import QMainWindow
-from PyQt6.QtCore import QTimer, QObject
+from PySide6.QtWidgets import QMainWindow
+from PySide6.QtCore import QTimer, QObject
 
 from ui.MainWindow import Ui_MainWindow  # Import the generated UI class
 

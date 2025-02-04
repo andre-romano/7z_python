@@ -4,10 +4,16 @@ import sys
 import os
 import logging
 
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 from MainWindow import MainWindow
 from Regex import Regex
+
+
+def load_file(filename):
+    with open(filename, "r") as file:
+        return file.read()
+
 
 # get filename
 filename = os.path.basename(__file__).split(".")[0]
@@ -23,6 +29,9 @@ try:
     data_path = regex.search(script_path).groups()[0]+f"{os.path.sep}data"
 except:
     pass
+
+# get UI path
+ui_path = f"{data_path}{os.path.sep}ui"
 
 # place script path in PATH env
 sys.path.insert(0, script_path)
@@ -55,11 +64,19 @@ if __name__ == "__main__":
     # start app (safely catch errors and log'em)
     try:
         app = QApplication(sys.argv)
+
+        # load QSS styles
+        qss = load_file(f"{ui_path}{os.path.sep}styles.qss")
+        app.setStyleSheet(qss)
+
+        # display main window
         mainWindow = MainWindow(
             data_path,
             debug=debug
         )
         mainWindow.show()
+
+        # terminate app
         sys.exit(app.exec())
     except Exception as e:
         logger.error(f"Uncaught Error: {e}")

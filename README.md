@@ -9,7 +9,7 @@ Frontend GUI tool to manage 7zip SFX with an easy to use interface, supporting a
   - [Building (Windows .exe)](#building-windows-exe)
   - [Download stable releases (binary EXE files)](#download-stable-releases-binary-exe-files)
   - [Special thanks / Acknowledgments](#special-thanks--acknowledgments)
-  - [Copyright](#copyright)
+  - [License and Copyright](#license-and-copyright)
 
 
 ## How to create an SFX with autorun script
@@ -64,16 +64,18 @@ Check the [Releases](https://github.com/andre-romano/7z_python/releases/) pages 
 ## Special thanks / Acknowledgments
 
 - [Qt6](https://www.qt.io/)
-- [PyQt6](https://pypi.org/project/PyQt6/)
+- [PySide6](https://doc.qt.io/qtforpython-6/)
 - [7zip project](https://www.7-zip.org/)
 - [Flaticon](https://www.flaticon.com/)
 
-## Copyright
+## License and Copyright
 
 Copyright (C) [2025] Andre Luiz Romano Madureira
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This project is licensed under the GNU Lesser General Public License (LGPL).  
+You are free to use, modify, and distribute this software under the terms of the LGPL.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+For more details, see the full license text (see [./LICENSE](./LICENSE) file).
 
-You should have received a copy of the GNU General Public License along with this program (see [./LICENSE](./LICENSE) file). If not, see <https://www.gnu.org/licenses/>.
+You can also see the the full license text here:
+[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html)
