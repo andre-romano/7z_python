@@ -1,10 +1,8 @@
 import logging
-import sys
-import os
 
-from Regex import Regex
+from utils.Regex import Regex
 
-from process.SubprocessHandler import SubprocessHandler
+from utils.SubprocessHandler import SubprocessHandler
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -31,13 +29,9 @@ class SevenZipHandler(SubprocessHandler):
             return ''
         return file_fmt_arg
 
-    def __init__(self, env, start_callback, update_callback, finish_callback):
-        super().__init__(env, start_callback, update_callback, finish_callback)
+    def __init__(self, start_callback, update_callback, finish_callback, env: dict):
+        super().__init__(start_callback, update_callback, finish_callback, env=env)
         self.addUpdateCallback(self._check_progress)
-
-    def _setENV(self):
-        self.env['7ZIP_BIN'] = f"{self.env['DATA_PATH']}{os.path.sep}lib"
-        self.env['7ZIP'] = f"{self.env['7ZIP_BIN']}{os.path.sep}7z.exe"
 
     def _check_progress(self, message):
         try:

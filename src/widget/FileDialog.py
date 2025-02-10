@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 from PySide6.QtWidgets import QWidget, QFileDialog
 
@@ -14,10 +14,10 @@ class FileDialog:
         filename = filename.replace('\\', os.path.sep)
         return filename
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget | None = None):
         self.parent = parent
 
-    def selectFiles(self, title: str, err_msg: str, filter: str = None):
+    def selectFiles(self, title: str, err_msg: str, filter: str | None = None):
         """
         Function to select multiple files using QFileDialog.
         :param filter: Filter for file types.
@@ -27,7 +27,7 @@ class FileDialog:
         """
         logger.info(f"(title={title}, filter={filter})")
         files, _ = QFileDialog.getOpenFileNames(
-            self.parent, title, filter=filter)
+            self.parent, title, filter=filter or "")
         if not files:
             raise Exception(err_msg)
 
@@ -36,7 +36,7 @@ class FileDialog:
         logger.info(f"{files}")
         return files
 
-    def selectFile(self, title: str, err_msg: str, filter: str = None):
+    def selectFile(self, title: str, err_msg: str, filter: str | None = None):
         """
         Function to select a single file using QFileDialog.
         :param filter: Filter for file types.
@@ -44,7 +44,7 @@ class FileDialog:
         """
         logger.info(f"(title={title}, filter={filter})")
         file, _ = QFileDialog.getOpenFileName(
-            self.parent, title, filter=filter)
+            self.parent, title, filter=filter or "")
         if not file:
             raise Exception(err_msg)
 
@@ -69,7 +69,7 @@ class FileDialog:
         logger.info(f"{directory}")
         return directory
 
-    def selectSaveFile(self, title: str, err_msg: str, filter: str = None):
+    def selectSaveFile(self, title: str, err_msg: str, filter: str | None = None):
         """
         Function to select an save file (with save option) using QFileDialog.
         :param filter: Filter for file types.
@@ -77,7 +77,7 @@ class FileDialog:
         """
         logger.info(f"(title={title}, filter={filter})")
         file, _ = QFileDialog.getSaveFileName(
-            self.parent, title, filter=filter)
+            self.parent, title, filter=filter or "")
         if not file:
             raise Exception(err_msg)
 

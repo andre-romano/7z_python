@@ -1,21 +1,19 @@
 #!/bin/python3
 import logging
 import sys
-import os
 
 from PySide6.QtWidgets import QWidget, QTextEdit
 
 from widget.MsgBox import MsgBox
 
-from process.SubprocessHandler import SubprocessHandler
+from utils.SubprocessHandler import SubprocessHandler
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
 
 
 class SFXAutorun:
-    def __init__(self, env: dict, autorun: str, silent: str, parent: QWidget = None):
-        self.env = env.copy()
+    def __init__(self, env: dict, autorun: str, silent: str, parent: QWidget):
         self.msgBox = MsgBox(parent)
 
         self.autorun = autorun.split()
@@ -30,13 +28,13 @@ class SFXAutorun:
         self.setMsgBox('', '', '')
 
         self.subprocess = SubprocessHandler(
-            env,
             start_callback=self.on_start,
             update_callback=self.on_update,
-            finish_callback=self.on_finish
+            finish_callback=self.on_finish,
+            env=env
         )
 
-    def setLogOutput(self, log_output: QTextEdit):
+    def setLogOutput(self, log_output: QTextEdit | None):
         self.log_output = log_output
 
     def setMsgBox(self, title: str, text_succ: str, text_fail: str):
@@ -62,6 +60,8 @@ class SFXAutorun:
         pass
 
     def on_update(self, message: str):
+        if not self.log_output:
+            return
         self.log_output.append(message)
 
     def on_finish(self):

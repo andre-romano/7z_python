@@ -2,13 +2,16 @@ import logging
 import os
 import configparser
 
+
+from Environment import Environment
+
 # Set up logger (you may have already set this up elsewhere in your application)
 logger = logging.getLogger(__name__)
 
 
 class Config:
-    def __init__(self, env: dict):
-        self.env = env
+    def __init__(self):
+        env = Environment.getInstance()
         self.config_file = env['CONFIG_FILE']
         self.config = configparser.ConfigParser()
 

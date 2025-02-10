@@ -1,5 +1,3 @@
-import sys
-import os
 import subprocess
 
 from multiprocessing import Queue, Lock
@@ -9,7 +7,7 @@ from PySide6.QtCore import QThread
 
 class SubprocessWorker(QThread):
 
-    def __init__(self, command: list, queue: Queue, env: dict = None):
+    def __init__(self, command: list, queue: Queue, env: dict | None = None):
         super().__init__()
         self.command = command
         self.queue = queue
@@ -40,7 +38,8 @@ class SubprocessWorker(QThread):
             )
 
             while True:
-                output = process.stdout.readline()
+                stdout = process.stdout
+                output = stdout.readline() if stdout else ''
                 retcode = process.poll()
                 if output == "" and retcode is not None:
                     break

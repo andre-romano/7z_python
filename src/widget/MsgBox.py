@@ -1,4 +1,4 @@
-import os
+
 import logging
 
 from PySide6.QtWidgets import QWidget, QMessageBox
@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 class MsgBox:
     StandardButton = QMessageBox.StandardButton  # Alias for shorter references
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget):
         self.parent = parent
 
     def showInformation(self, title: str, text: str):
         logger.debug(f"(title={title} , text={text})")
-        return QMessageBox.information(self.parent, title, text)
+        return QMessageBox.information(self.parent, title, text, MsgBox.StandardButton.Ok)
 
     def showWarning(self, title: str, text: str):
         logger.debug(f"(title={title} , text={text})")

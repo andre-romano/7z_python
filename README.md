@@ -72,10 +72,6 @@ Check the [Releases](https://github.com/andre-romano/7z_python/releases/) pages 
 
 Copyright (C) [2025] Andre Luiz Romano Madureira
 
-This project is licensed under the GNU Lesser General Public License (LGPL).  
-You are free to use, modify, and distribute this software under the terms of the LGPL.
+This project is licensed under the Apache License 2.0.  
 
 For more details, see the full license text (see [./LICENSE](./LICENSE) file).
-
-You can also see the the full license text here:
-[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html)

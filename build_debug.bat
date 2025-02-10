@@ -29,5 +29,5 @@ pyinstaller ^
     --noconfirm ^
     --onefile ^
     --debug all ^
-    .\src\7z_python.py
+    .\src\_main.py
 

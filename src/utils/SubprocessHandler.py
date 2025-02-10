@@ -1,14 +1,11 @@
 import logging
-import sys
-import os
 
 from multiprocessing import Queue
 
 from PySide6.QtCore import Signal, QObject
 
-from Callbacks import Callbacks
-
-from process.SubprocessWorker import SubprocessWorker
+from utils.Callbacks import Callbacks
+from utils.SubprocessWorker import SubprocessWorker
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -17,11 +14,10 @@ logger = logging.getLogger(__name__)
 class SubprocessHandler(QObject):
     progress = Signal(int)
 
-    def __init__(self, env, start_callback=None, update_callback=None, finish_callback=None):
+    def __init__(self, start_callback=None, update_callback=None, finish_callback=None, env: dict | None = None):
         super().__init__()
 
-        self.env = env
-        self._setENV()
+        self.env = env or {}
 
         self.start_callbacks = Callbacks(start_callback)
         self.update_callbacks = Callbacks(update_callback)
@@ -32,9 +28,6 @@ class SubprocessHandler(QObject):
 
         self.command = []
         self._setReturnCode(0)
-
-    def _setENV(self):
-        logger.warning("Not overriden")
 
     def run(self):
         logger.info(f"(command={self.command})")
@@ -47,7 +40,7 @@ class SubprocessHandler(QObject):
         self.start_callbacks.run()
         self.progress.emit(0)
 
-        # create queue
+        # create queue and environment
         queue = Queue()
 
         # Start the worker process
@@ -70,11 +63,15 @@ class SubprocessHandler(QObject):
         logger.info("Waiting for Worker ...")
         worker.wait()
         logger.info("Worker TERMINATED")
-        self._setReturnCode(worker.getReturnCode())
 
         # process finished
+        self._setReturnCode(worker.getReturnCode())
         self.finish_callbacks.run()
         self.progress.emit(100)
+
+        # To flush the logger and any handlers
+        for handler in logger.handlers:
+            handler.flush()
 
     def addStartCallback(self, callback):
         self.start_callbacks.append(callback)
