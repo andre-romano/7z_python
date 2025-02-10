@@ -85,6 +85,11 @@ class SafeDict:
         with self._lock:
             return len(self._dict)
 
+    def __iter__(self):
+        """Make SafeDict iterable by returning a thread-safe iterator over the keys."""
+        with self._lock:
+            return iter(self._dict.copy())  # Copy ensures thread safety
+
     def __repr__(self):
         """Return a string representation of the dictionary."""
         with self._lock:

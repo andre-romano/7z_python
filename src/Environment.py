@@ -2,7 +2,8 @@ import logging
 import os
 
 from utils.SingletonAbstract import SingletonAbstract
-from utils.SafeDict import SafeDict
+
+from datatype.SafeDict import SafeDict
 
 # Set up logger (you may have already set this up elsewhere in your application)
 logger = logging.getLogger(__name__)

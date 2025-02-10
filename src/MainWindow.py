@@ -39,7 +39,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QObject):
             self.on_7z_finish,
             env=env.copyDict()
         )
-        self.sevenZip.connectProgress(
+        self.sevenZip.addProgressCallback(
             lambda progress: self.progress_bar.setValue(progress))
 
         # create and configure UI
@@ -153,7 +153,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, QObject):
         self.log_output.clear()
 
     def on_7z_update(self, message: str):
-        # logger.debug(message)
+        logger.debug(message)
         self.log_output.append(message)
 
     def on_7z_finish(self):

@@ -2,8 +2,6 @@ import logging
 
 from multiprocessing import Queue
 
-from PySide6.QtCore import Signal, QObject
-
 from utils.Callbacks import Callbacks
 from utils.SubprocessWorker import SubprocessWorker
 
@@ -11,8 +9,7 @@ from utils.SubprocessWorker import SubprocessWorker
 logger = logging.getLogger(__name__)
 
 
-class SubprocessHandler(QObject):
-    progress = Signal(int)
+class SubprocessHandler:
 
     def __init__(self, start_callback=None, update_callback=None, finish_callback=None, env: dict | None = None):
         super().__init__()
@@ -23,8 +20,10 @@ class SubprocessHandler(QObject):
         self.update_callbacks = Callbacks(update_callback)
         self.finish_callbacks = Callbacks(finish_callback)
 
+        self.progress_callbacks = Callbacks()
+
         # monitor subprocess progress
-        self.progress.emit(0)
+        self.progress_callbacks.run(0)
 
         self.command = []
         self._setReturnCode(0)
@@ -38,7 +37,7 @@ class SubprocessHandler(QObject):
 
         # process start callback
         self.start_callbacks.run()
-        self.progress.emit(0)
+        self.progress_callbacks.run(0)
 
         # create queue and environment
         queue = Queue()
@@ -67,7 +66,7 @@ class SubprocessHandler(QObject):
         # process finished
         self._setReturnCode(worker.getReturnCode())
         self.finish_callbacks.run()
-        self.progress.emit(100)
+        self.progress_callbacks.run(100)
 
         # To flush the logger and any handlers
         for handler in logger.handlers:
@@ -82,8 +81,8 @@ class SubprocessHandler(QObject):
     def addFinishCallback(self, callback):
         self.finish_callbacks.append(callback)
 
-    def connectProgress(self, callback):
-        return self.progress.connect(callback)
+    def addProgressCallback(self, callback):
+        self.progress_callbacks.append(callback)
 
     def _setReturnCode(self, returncode: int):
         self.returncode = returncode

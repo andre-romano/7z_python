@@ -41,7 +41,7 @@ class SevenZipHandler(SubprocessHandler):
             match = regex.search(message)
             # Extract progress
             _, progress = match.groups()
-            self.progress.emit(int(progress))
+            self.progress_callbacks.run(int(progress))
         except Exception as e:
             pass
 

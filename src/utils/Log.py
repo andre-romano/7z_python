@@ -9,7 +9,7 @@ from PySide6.QtCore import QTimer
 class Log:
 
     @staticmethod
-    def config(logfile: str | None = None, debug: bool = True):
+    def config(logfile: str | None = None, debug: bool = False):
         """Configures the logging system."""
         log_level = logging.DEBUG if debug else logging.INFO
 
